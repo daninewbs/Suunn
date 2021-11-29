@@ -23,6 +23,8 @@ NEO_PIN = 26
 # Set to false to disable testing/tracing code
 TESTING = True
 
+t = rtc.datetime #global time tracker
+
 """takes as input number of minutes it takes for strip to fade from min to max """
 def sunrise(light_minutes):
     np = neopixel.NeoPixel(Pin(NEO_PIN), LIGHTS) #using 24 pixel ring
@@ -88,9 +90,23 @@ def alarm():
     beeper.deinit() #TODO: signal this when button pressed
     
 
-
-#TODO: check RTC to see if 7AM
-
+"""uses RTC and checks if it is 30 min before wake up time"""
+def wakeup(hour, min):
+    if (t.tm_hour == hour and
+        t.tm_min == min-30 and
+        t.tm_sec == 60):
+        return True
+    
+#create FSM
+""" modes:
+WAKEUP (sunrise sequence)
+    trigger 30 min before wakeup time
+IDLE (display time light off)
+    trigger off button pressed
+ON (display time light on -> cycle though colors with each time button pressed changing color)
+    trigger color/light button pressed (must be diff than off button)
+"""
+    
 if TESTING:
     sunrise(10) #30 when not testing
 else:
