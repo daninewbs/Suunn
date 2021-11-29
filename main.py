@@ -1,5 +1,5 @@
 #Danielle Newberry &  Ben Allan-Rahill
-#code to power sunrise lamp using esp32 feather huzzah
+#code to power sunrise lamo using esp32 feather huzzah
 
 
 from machine import Pin, PWM, RTC
@@ -20,8 +20,11 @@ LIGHTS = 24
 BUZZER_PIN = 25
 NEO_PIN = 26
 
+# Set to false to disable testing/tracing code
+TESTING = True
 
-def sunrise():
+"""takes as input number of minutes it takes for strip to fade from min to max """
+def sunrise(light_minutes):
     np = neopixel.NeoPixel(Pin(NEO_PIN), LIGHTS) #using 24 pixel ring
     esp.osdebug(None) #disable debugging
 
@@ -41,27 +44,20 @@ def sunrise():
     np.write()
     """
 
-    # https://learn.adafruit.com/pyportal-wake-up-light?view=all
-
-
-    #TODO: check RTC to see if 7AM
-    default_wake_up = "7:30A"
-
-    # number of minutes it takes for strip to fade from min to max
-    light_minutes = 10 #30 mins
-
-
     for i in range(light_minutes - 1):
             
             for j in range(LIGHTS):  
                 np[j] = (i,i//2,0) 
                 np.write()
             
-            time.sleep(.5) # 60 for once per min
-            #light_minutes -= light_minutes
+            if TESTING:
+                time.sleep(.5)
+            else:
+                time.sleep(60) # 60 for once per min
+           
         
 
-    #When ulights reach full brightness (at alarm time buzzer goes off)
+    #When lights reach full brightness (at alarm time buzzer goes off)
 
 
 def alarm():
@@ -89,9 +85,15 @@ def alarm():
         beeper.freq(tones[tone])
         time.sleep(tempo/length)
 
-    beeper.deinit()
-    #repeat until user presses off button
+    beeper.deinit() #TODO: signal this when button pressed
+    
 
 
-sunrise()
+#TODO: check RTC to see if 7AM
+
+if TESTING:
+    sunrise(10) #30 when not testing
+else:
+    sunrise(30)
+#repeat until user presses off button
 alarm()
