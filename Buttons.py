@@ -30,7 +30,7 @@ class Buttons:
                 self.long_press = True
                 self.toggle_edit()
 
-    def edit(self, a_press=None, b_press=None, c_press=None):
+    def edit(self, a_press=None, b_press=None):
         # use polling
         # use edit functions
         self.edit_mode = True
@@ -42,9 +42,8 @@ class Buttons:
             elif not B_BUTTON.value():
                 # B pressed
                 b_press()
-            elif not C_BUTTON.value():
-                # C pressed
-                c_press()
 
-    def toggle_edit(self):
+    def toggle_edit(self, callback=None):
         self.edit_mode = not self.edit_mode
+        callback()
+        print("EDIT TOGGLED")

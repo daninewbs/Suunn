@@ -193,14 +193,13 @@ def display_on():
 i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
 
 screen = Screen(i2c=i2c)
-time.localtime()
-print(time.localtime())
-clock = Clock(screen)
+t = time.localtime(time.mktime((2021, 12, 4, 11, 58, 0, 0, 0)))
+
+clock = Clock(screen, time=t)
 clock.draw_clock()
 buttons = Buttons()
-# while True:
-#     if buttons.long_press:
-#         clock.edit_alarm()
-#         buttons.toggle_edit()
-#         buttons.edit(lambda: clock.change_a_min(1), lambda: clock.change_a_min(-1))
-#         buttons.long_press = False
+while True:
+    if buttons.long_press:
+        buttons.toggle_edit(lambda: clock.toggle_edit())
+        buttons.edit(lambda: clock.change_a_min(1), lambda: clock.change_a_min(-1))
+        buttons.long_press = False

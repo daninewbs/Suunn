@@ -12,40 +12,41 @@ COLON_GAP = 8
 
 
 class Alarm:
-    _hours = 0
-    _minutes = 0
-    am = True
-
-    def __init__(self, hours, minutes) -> None:
-        self._hours = hours
-        self._minutes = minutes
-
-    def change_alarm(self, hours, minutes, am=True):
-        self.hours = hours
-        self.minutes = minutes
-        self.am = am
-
-    @property
-    def minutes(self):
-        return self._minutes % 60
-
-    @minutes.setter
-    def minutes(self, value):
-        self._minutes = value
+    def __init__(self, time=time.localtime()) -> None:
+        self.time = time
 
     @property
     def hours(self):
-        return self._hours % 12
+        return self.time[3] % 12
+
+    @property
+    def military_hours(self):
+        return self.time[3]
+
+    @property
+    def minutes(self):
+        return self.time[4]
+
+    @property
+    def is_am(self):
+        return self.military_hours < 12
+
+    def c_min(self, val):
+        print(self.time)
+        self.time = time.localtime(time.mktime(self.time) + 60 * val)
+
+    def c_hour(self, val):
+        self.time = time.localtime(time.mktime(self.time) + pow(60, 2) * val)
 
 
 class Clock:
     alarm: Alarm
-    editing_alarm = False
+    is_editing_alarm = False
 
     def __init__(self, screen, time=time.localtime()) -> None:
         self.time = time
         self.screen = screen
-        self.alarm = Alarm(7, 30)
+        self.alarm = Alarm()
 
     @property
     def hours(self):
@@ -113,13 +114,6 @@ class Clock:
         self.__draw_am_pm()
         self.screen.display.show()
 
-    def edit_alarm(self):
-        # start the control sequence
-        self.editing_alarm = True
-        self.__control_seq()
-        self.__draw_alarm()
-        self.editing_alarm = False
-
     def __draw_alarm(self):
         h = self.alarm.hours
         m = self.alarm.minutes
@@ -138,5 +132,18 @@ class Clock:
         )
 
     def change_a_min(self, diff):
-        self.alarm.minutes += diff
+        self.alarm.c_min(diff)
         self.__draw_alarm()
+
+    def change_a_hour(self, diff):
+        self.alarm.c_hour(diff)
+        self.__draw_alarm()
+
+    def toggle_edit(self):
+        self.is_editing_alarm = not self.is_editing_alarm
+        self.__control_seq()
+        if self.is_editing_alarm:
+            # draw alarm
+            self.__draw_alarm()
+        else:
+            self.draw_clock()
