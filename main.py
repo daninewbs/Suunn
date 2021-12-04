@@ -3,8 +3,10 @@
 from machine import I2C, Pin, PWM
 import esp
 import neopixel
+from Buttons import Buttons
+from Clock import Clock
+from Screen import Screen
 from sh1107 import SH1107_I2C
-import esp
 import time
 from pcf8523 import PCF8523
 from real_clock import RealClock
@@ -21,7 +23,6 @@ RED = (205, 0, 0)
 LIGHTS = 24
 BUZZER_PIN = 25
 NEO_PIN = 26
-
 # Set to false to disable testing/tracing code
 TESTING = True
 
@@ -159,3 +160,47 @@ def wakeup(h, m):
 
 wakeup(pre_set_alarm_hour, pre_set_alarm_min)
 
+
+# def wakeup(hour, min):
+#     if t.tm_hour == hour and t.tm_min == min - 30 and t.tm_sec == 60:
+#         return True
+
+
+# create FSM
+""" modes:
+WAKEUP (sunrise sequence)
+    trigger 30 min before wakeup time
+IDLE (display time light off)
+    trigger off button pressed
+ON (display time light on -> cycle though colors with each time button pressed changing color)
+    trigger color/light button pressed (must be diff than off button)
+"""
+
+
+def display_on():
+    print("turn on")
+    i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
+    screen = Screen(i2c=i2c)
+
+
+# if TESTING:
+#     sunrise(10)  # 30 when not testing
+# else:
+#     sunrise(30)
+# repeat until user presses off button
+#  alarm()
+# display_on()
+i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
+
+screen = Screen(i2c=i2c)
+time.localtime()
+print(time.localtime())
+clock = Clock(screen)
+clock.draw_clock()
+buttons = Buttons()
+# while True:
+#     if buttons.long_press:
+#         clock.edit_alarm()
+#         buttons.toggle_edit()
+#         buttons.edit(lambda: clock.change_a_min(1), lambda: clock.change_a_min(-1))
+#         buttons.long_press = False
