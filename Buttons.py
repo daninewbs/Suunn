@@ -8,42 +8,49 @@ C_BUTTON = Pin(14, Pin.IN)
 
 class Buttons:
     long_press = False
-    a = False
-    b = False
-    c = False
-    edit_mode = False
+    pressed_map = {"Pin(15)": False, "Pin(32)": False, "Pin(14)": False}
 
     def __init__(self) -> None:
+        self.on_a = None
+        self.on_b = None
+        self.on_c = None
 
         self.__set_interrupts()
 
     def __set_interrupts(self):
         # attach the interrupts
-        C_BUTTON.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.callback)
-        # A_BUTTON.irq(trigger=Pin.IRQ_FALLING, handler=button_down)
 
-    def callback(self, pin):
+        # LONG PRESS
+        C_BUTTON.irq(
+            trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.LONG_PRESS_ISR
+        )
+
+        # normal push button ISRs
+        A_BUTTON.irq(trigger=Pin.IRQ_FALLING, handler=self.BDOWN_ISR)
+        B_BUTTON.irq(trigger=Pin.IRQ_FALLING, handler=self.BDOWN_ISR)
+
+    def LONG_PRESS_ISR(self, pin):
         if not pin.value():
             self.first_press = time.time_ns()
         else:
             if time.time_ns() - self.first_press > 1 * pow(10, 9):
-                self.long_press = True
-                self.toggle_edit()
+                self.long_press = not self.long_press
 
-    def edit(self, a_press=None, b_press=None):
-        # use polling
-        # use edit functions
-        self.edit_mode = True
-        while self.edit_mode:
-            if not A_BUTTON.value():
-                time.sleep(0.05)
+    def BDOWN_ISR(self, pin):
+        for k in [A_BUTTON, B_BUTTON, C_BUTTON]:
+            if pin == k:
+                self.pressed_map[f"{k}"] = True
+
+    def wait_for_input(self):
+        while True:
+            if self.pressed_map["Pin(15)"]:
                 # A pressed
-                a_press()
-            elif not B_BUTTON.value():
+                time.sleep(0.05)
+                self.on_a()
+                self.pressed_map["Pin(15)"] = False
+            elif self.pressed_map["Pin(32)"]:
                 # B pressed
-                b_press()
+                time.sleep(0.05)
+                self.on_b()
+                self.pressed_map["Pin(32)"] = False
 
-    def toggle_edit(self, callback=None):
-        self.edit_mode = not self.edit_mode
-        callback()
-        print("EDIT TOGGLED")

@@ -1,5 +1,7 @@
 import time
 
+from Buttons import Buttons
+
 
 DIGIT_SPACING = 2
 
@@ -11,50 +13,19 @@ COLON_SPACE = 10
 COLON_GAP = 8
 
 
-class Alarm:
-    def __init__(self, time=time.localtime()) -> None:
-        self.time = time
-
-    @property
-    def hours(self):
-        return self.time[3] % 12
-
-    @property
-    def military_hours(self):
-        return self.time[3]
-
-    @property
-    def minutes(self):
-        return self.time[4]
-
-    @property
-    def is_am(self):
-        return self.military_hours < 12
-
-    def c_min(self, val):
-        print(self.time)
-        self.time = time.localtime(time.mktime(self.time) + 60 * val)
-
-    def c_hour(self, val):
-        self.time = time.localtime(time.mktime(self.time) + pow(60, 2) * val)
-
-
-class Clock:
-    alarm: Alarm
-    is_editing_alarm = False
-
+class ClockDisplay:
     def __init__(self, screen, time=time.localtime()) -> None:
         self.time = time
         self.screen = screen
-        self.alarm = Alarm()
 
     @property
     def hours(self):
-        return self.time[3] % 12
+        print(self.time)
+        return self.time[3] % 24
 
     @property
     def military_hours(self):
-        return self.time[3]
+        return self.time[3] % 24
 
     @property
     def minutes(self):
@@ -105,7 +76,7 @@ class Clock:
         else:
             self.screen.print("P M", 100, 10)
 
-    def draw_clock(self, hours=-1, minutes=-1):
+    def draw(self, hours=-1, minutes=-1):
         hours = hours if hours >= 0 else self.hours
         minutes = minutes if minutes >= 0 else self.minutes
         self.draw_hours(hours)
@@ -114,36 +85,73 @@ class Clock:
         self.__draw_am_pm()
         self.screen.display.show()
 
-    def __draw_alarm(self):
-        h = self.alarm.hours
-        m = self.alarm.minutes
-        print(m)
-        self.draw_clock(h, m)
-
     def __control_seq(self):
         for i in range(2):
             self.screen.clear()
             time.sleep(0.5)
-            self.draw_clock()
+            self.draw()
 
     def _digit_start(self, i):
         return CLOCK_START[0] + (i) * (
             (2 * self.screen.LINE_SPACE) + self.screen.H_LENGTH + DIGIT_SPACING
         )
 
-    def change_a_min(self, diff):
-        self.alarm.c_min(diff)
-        self.__draw_alarm()
+    def __c_min(self, val):
+        self.time = time.localtime(time.mktime(self.time) + 60 * val)
+        self.draw()
 
-    def change_a_hour(self, diff):
-        self.alarm.c_hour(diff)
-        self.__draw_alarm()
+    def __c_hour(self, val):
+        self.time = time.localtime(time.mktime(self.time) + pow(60, 2) * val)
+        self.draw()
+
+
+class Alarm(ClockDisplay):
+    def __init__(self, screen, time=time.localtime()) -> None:
+        super().__init__(screen, time=time)
+
+
+class LiveClock(ClockDisplay):
+    def __init__(self, screen, time=time.localtime()) -> None:
+        super().__init__(screen, time=time)
+
+
+class Watch:
+    is_editing_alarm = False
+
+    def __init__(self, screen, live_time=None, alarm_time=None) -> None:
+        self.alarm = Alarm(screen=screen, time=alarm_time)
+        self.live_clock = LiveClock(screen=screen, time=live_time)
+        self.buttons = Buttons()
+
+    @property
+    def clock(self):
+        return self.alarm if self.is_editing_alarm else self.live_clock
 
     def toggle_edit(self):
         self.is_editing_alarm = not self.is_editing_alarm
+
+        # set functions for edit mode
+        self.buttons.on_a = lambda: self.clock.__c_min(1)
+        self.buttons.on_b = lambda: self.clock.__c_min(-1)
+
         self.__control_seq()
-        if self.is_editing_alarm:
-            # draw alarm
-            self.__draw_alarm()
-        else:
-            self.draw_clock()
+        self.draw()
+
+    def draw(self):
+        print(self.clock)
+        self.clock.draw()
+
+    def __control_seq(self):
+        print(self.clock)
+        self.clock.__control_seq()
+
+    def live(self):
+        self.draw()
+
+        while True:
+            if self.buttons.long_press:
+
+                self.toggle_edit()
+
+                self.buttons.wait_for_input()
+

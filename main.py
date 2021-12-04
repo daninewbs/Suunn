@@ -4,7 +4,7 @@ from machine import I2C, Pin, PWM
 import esp
 import neopixel
 from Buttons import Buttons
-from Clock import Clock
+from Clock import Watch
 from Screen import Screen
 from sh1107 import SH1107_I2C
 import time
@@ -195,11 +195,6 @@ i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
 screen = Screen(i2c=i2c)
 t = time.localtime(time.mktime((2021, 12, 4, 11, 58, 0, 0, 0)))
 
-clock = Clock(screen, time=t)
-clock.draw_clock()
-buttons = Buttons()
-while True:
-    if buttons.long_press:
-        buttons.toggle_edit(lambda: clock.toggle_edit())
-        buttons.edit(lambda: clock.change_a_min(1), lambda: clock.change_a_min(-1))
-        buttons.long_press = False
+watch = Watch(screen, live_time=t, alarm_time=t)
+
+watch.live()
