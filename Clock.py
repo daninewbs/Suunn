@@ -20,7 +20,6 @@ class ClockDisplay:
 
     @property
     def hours(self):
-        print(self.time)
         return self.time[3] % 24
 
     @property
@@ -71,7 +70,6 @@ class ClockDisplay:
         )
 
     def __draw_am_pm(self):
-        print(self.is_am)
         self.screen.clear_rect(100, 10, 28, 50)
         if self.is_am:
             self.screen.print("A M", 100, 10)
@@ -136,8 +134,12 @@ class Watch:
         self.buttons.on_a = lambda: self.clock.__c_min(1)
         self.buttons.on_b = lambda: self.clock.__c_min(-1)
 
+        print(self.clock)
         self.__control_seq()
         self.draw()
+
+        if self.is_editing_alarm:
+            self.buttons.wait_for_input(self.buttons.long_press)
 
     def draw(self):
         self.clock.draw()
@@ -149,9 +151,11 @@ class Watch:
         self.draw()
 
         while True:
+            # wait for i nteraction with the clock
             if self.buttons.long_press:
-
+                self.buttons.long_press = False
                 self.toggle_edit()
 
-                self.buttons.wait_for_input()
+    def change_alarm_time(self, time):
+        self.alarm.time = time
 
