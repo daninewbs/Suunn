@@ -3,13 +3,13 @@
 from machine import I2C, Pin, PWM
 import esp
 import neopixel
-from Buttons import Buttons
-from Clock import Watch
-from Screen import Screen
-from sh1107 import SH1107_I2C
+from suunn.Buttons import Buttons
+from suunn.Clock import Watch
+from suunn.Screen import Screen
+from suunn.sh1107 import SH1107_I2C
 import time
-from pcf8523 import PCF8523
-from real_clock import RealClock
+from suunn.pcf8523 import PCF8523
+from suunn.real_clock import RealClock
 
 # constant colors
 BLUE = (100, 149, 237)
@@ -100,12 +100,14 @@ def alarm():
 
 """uses RTC and checks if it is 30 min before wake up time"""
 # adapted from https://github.com/mchobby/esp8266-upy/blob/master/pcf8523/examples/test_alarm.py
+i2c = I2C(sda=SDA, scl=SCL)
+
+
 def wakeup(h, m):
 
     # Create an I2C object out of our SDA and SCL pin objects
-    i2c = I2C(sda=SDA, scl=SCL)
     rtc = RealClock(i2c)
-    rtc = PCF8523(i2c)
+    # rtc = PCF8523(i2c)
 
     if (
         TESTING
@@ -158,7 +160,7 @@ def wakeup(h, m):
         time.sleep(10)
 
 
-wakeup(pre_set_alarm_hour, pre_set_alarm_min)
+# wakeup(pre_set_alarm_hour, pre_set_alarm_min)
 
 
 # def wakeup(hour, min):
@@ -187,7 +189,7 @@ ON (display time light on -> cycle though colors with each time button pressed c
 # MQTT CLIENT
 
 
-i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
+# i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
 
 screen = Screen(i2c=i2c)
 t = time.localtime(time.mktime((2021, 12, 4, 12, 00, 0, 0, 0)))

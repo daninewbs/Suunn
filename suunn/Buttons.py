@@ -34,7 +34,6 @@ class Buttons:
             self.first_press = time.time_ns()
         else:
             if time.time_ns() - self.first_press > 1 * pow(10, 9):
-                print(self.long_press)
                 self.long_press = not self.long_press
                 print("LONG PRESS")
 
@@ -43,8 +42,10 @@ class Buttons:
             if pin == k:
                 self.pressed_map[f"{k}"] = True
 
-    def wait_for_input(self, condition):
-        while condition:
+    def wait_for_input(self):
+        while True:
+            if self.long_press:
+                break
             if self.pressed_map["Pin(15)"]:
                 # A pressed
                 time.sleep(0.05)

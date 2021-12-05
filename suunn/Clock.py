@@ -1,6 +1,6 @@
 import time
 
-from Buttons import Buttons
+from .Buttons import Buttons
 
 
 DIGIT_SPACING = 2
@@ -128,18 +128,18 @@ class Watch:
         return self.alarm if self.is_editing_alarm else self.live_clock
 
     def toggle_edit(self):
+        print("toggling edit")
         self.is_editing_alarm = not self.is_editing_alarm
-
-        # set functions for edit mode
-        self.buttons.on_a = lambda: self.clock.__c_min(1)
-        self.buttons.on_b = lambda: self.clock.__c_min(-1)
 
         print(self.clock)
         self.__control_seq()
         self.draw()
 
         if self.is_editing_alarm:
-            self.buttons.wait_for_input(self.buttons.long_press)
+            # set functions for edit mode
+            self.buttons.on_a = lambda: self.clock.__c_min(1)
+            self.buttons.on_b = lambda: self.clock.__c_min(-1)
+            self.buttons.wait_for_input()
 
     def draw(self):
         self.clock.draw()
