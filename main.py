@@ -193,7 +193,7 @@ def display_on():
 i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
 
 screen = Screen(i2c=i2c)
-t = time.localtime(time.mktime((2021, 12, 4, 11, 58, 0, 0, 0)))
+t = time.localtime(time.mktime((2021, 12, 4, 12, 00, 0, 0, 0)))
 
 watch = Watch(screen, live_time=t, alarm_time=t)
 

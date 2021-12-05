@@ -71,6 +71,8 @@ class ClockDisplay:
         )
 
     def __draw_am_pm(self):
+        print(self.is_am)
+        self.screen.clear_rect(100, 10, 28, 50)
         if self.is_am:
             self.screen.print("A M", 100, 10)
         else:
@@ -138,11 +140,9 @@ class Watch:
         self.draw()
 
     def draw(self):
-        print(self.clock)
         self.clock.draw()
 
     def __control_seq(self):
-        print(self.clock)
         self.clock.__control_seq()
 
     def live(self):
