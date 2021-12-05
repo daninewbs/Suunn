@@ -118,28 +118,28 @@ class LiveClock(ClockDisplay):
 class Watch:
     is_editing_alarm = False
 
-    def __init__(self, screen, live_time=None, alarm_time=None) -> None:
+    def __init__(self, screen, live_time=None, alarm_time=None, rtc=None) -> None:
         self.alarm = Alarm(screen=screen, time=alarm_time)
         self.live_clock = LiveClock(screen=screen, time=live_time)
         self.buttons = Buttons()
+        self.rtc = rtc
 
     @property
     def clock(self):
         return self.alarm if self.is_editing_alarm else self.live_clock
 
-    def toggle_edit(self):
-        print("toggling edit")
-        self.is_editing_alarm = not self.is_editing_alarm
-
-        print(self.clock)
+    def turn_on_edit(self):
         self.__control_seq()
         self.draw()
+        self.buttons.on_a = lambda: self.clock.__c_min(1)
+        self.buttons.on_b = lambda: self.clock.__c_min(-1)
 
-        if self.is_editing_alarm:
-            # set functions for edit mode
-            self.buttons.on_a = lambda: self.clock.__c_min(1)
-            self.buttons.on_b = lambda: self.clock.__c_min(-1)
-            self.buttons.wait_for_input()
+        while True:
+            if self.buttons.long_press:
+                break
+            self.buttons.check_for_input()
+
+        return self.alarm.time
 
     def draw(self):
         self.clock.draw()
@@ -148,13 +148,15 @@ class Watch:
         self.clock.__control_seq()
 
     def live(self):
+        self.live_clock.time = time.localtime(self.rtc.datetime)
         self.draw()
 
-        while True:
-            # wait for i nteraction with the clock
-            if self.buttons.long_press:
-                self.buttons.long_press = False
-                self.toggle_edit()
+    def check_for_edit(self):
+        # wait for i nteraction with the clock
+        if self.buttons.long_press:
+            self.is_editing_alarm = not self.is_editing_alarm
+            self.buttons.long_press = False
+        return self.is_editing_alarm
 
     def change_alarm_time(self, time):
         self.alarm.time = time
