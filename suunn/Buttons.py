@@ -42,18 +42,15 @@ class Buttons:
             if pin == k:
                 self.pressed_map[f"{k}"] = True
 
-    def wait_for_input(self):
-        while True:
-            if self.long_press:
-                break
-            if self.pressed_map["Pin(15)"]:
-                # A pressed
-                time.sleep(0.05)
-                self.on_a()
-                self.pressed_map["Pin(15)"] = False
-            elif self.pressed_map["Pin(32)"]:
-                # B pressed
-                time.sleep(0.05)
-                self.on_b()
-                self.pressed_map["Pin(32)"] = False
+    def check_for_input(self):
+        if self.pressed_map["Pin(15)"]:
+            # A pressed
+            time.sleep(0.05)
+            self.on_a()
+            self.pressed_map["Pin(15)"] = False
+        elif self.pressed_map["Pin(32)"]:
+            # B pressed
+            time.sleep(0.05)
+            self.on_b()
+            self.pressed_map["Pin(32)"] = False
 
