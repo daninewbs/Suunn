@@ -176,13 +176,6 @@ ON (display time light on -> cycle though colors with each time button pressed c
     trigger color/light button pressed (must be diff than off button)
 """
 
-
-def display_on():
-    print("turn on")
-    i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
-    screen = Screen(i2c=i2c)
-
-
 # if TESTING:
 #     sunrise(10)  # 30 when not testing
 # else:
@@ -190,6 +183,10 @@ def display_on():
 # repeat until user presses off button
 #  alarm()
 # display_on()
+
+# MQTT CLIENT
+
+
 i2c = I2C(sda=Pin(23), scl=Pin(22), freq=400000)
 
 screen = Screen(i2c=i2c)
