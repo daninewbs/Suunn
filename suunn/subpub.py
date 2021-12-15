@@ -42,8 +42,8 @@ class MQTT:
     def __init__(self) -> None:
         # MQTT SETUP
         # WiFi connection information
-        WIFI_SSID = "Storm"
-        WIFI_PASSWORD = "!Onward!"
+        WIFI_SSID = os.environ.get("WIFI_SSID")
+        WIFI_PASSWORD = os.environ.get("WIFI_PASSWORD")
 
         wifi = network.WLAN(network.STA_IF)
         wifi.active(True)
@@ -56,9 +56,6 @@ class MQTT:
         ap_if.active(False)
 
         # connect the device to the WiFi network
-        """wifi = network.WLAN(network.STA_IF)
-        wifi.active(True)
-        wifi.connect(WIFI_SSID, WIFI_PASSWORD)"""
 
         # wait until the device is connected to the WiFi network
         MAX_ATTEMPTS = 20
@@ -75,17 +72,8 @@ class MQTT:
         random_num = int.from_bytes(os.urandom(3), "little")
         mqtt_client_id = bytes("client_" + str(random_num), "utf-8")
 
-        # connect to Adafruit IO MQTT broker using unsecure TCP (port 1883)
-        #
-        # To use a secure connection (encrypted) with TLS:
-        #   set MQTTClient initializer parameter to "ssl=True"
-        #   Caveat: a secure connection uses about 9k bytes of the heap
-        #         (about 1/4 of the micropython heap on the ESP8266 platform)
-
         AWS_HOSTNAME = b"a5lu8ppnce8yt-ats.iot.us-west-2.amazonaws.com"
 
-        ADAFRUIT_IO_FEEDNAME_PUB = b"esp32mem"
-        ADAFRUIT_IO_FEEDNAME_SUB = b"color-picker"
         self.client = MQTTClient(
             client_id=mqtt_client_id,
             server=AWS_HOSTNAME,
@@ -99,15 +87,6 @@ class MQTT:
         except Exception as e:
             print("could not connect to MQTT server {}{}".format(type(e).__name__, e))
             sys.exit()
-
-        # mqtt_feedname_pub = bytes(
-        #     "{:s}/feeds/{:s}".format(ADAFRUIT_USERNAME, ADAFRUIT_IO_FEEDNAME_PUB),
-        #     "utf-8",
-        # )
-        # mqtt_feedname_sub = bytes(
-        #     "{:s}/feeds/{:s}".format(ADAFRUIT_USERNAME, ADAFRUIT_IO_FEEDNAME_SUB),
-        #     "utf-8",
-        # )
 
         self.client.set_callback(self.cb)
         self.client.subscribe(bytes("suunn/color", "utf-8"))
