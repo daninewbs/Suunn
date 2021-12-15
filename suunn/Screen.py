@@ -1,4 +1,4 @@
-from sh1107 import SH1107_I2C
+from .sh1107 import SH1107_I2C
 from framebuf import RGB565
 
 

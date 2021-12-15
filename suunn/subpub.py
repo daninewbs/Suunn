@@ -7,6 +7,7 @@
 # publish and subscribe on the same device
 
 import network
+import json
 import time
 from umqtt.robust import MQTTClient
 import os
@@ -22,12 +23,27 @@ LIGHTS = 24
 np = neopixel.NeoPixel(Pin(NEO_PIN), LIGHTS)  # using 24 pixel ring
 
 
+CACERT_PATH = "../ESP_SECRETS/AmazonRootCA1.pem"
+KEY_PATH = "../ESP_SECRETS/private.pem.key"
+CERT_PATH = "../ESP_SECRETS/certificate.pem.crt"
+with open(KEY_PATH, "r") as f:
+    key1 = f.read()
+
+with open(CACERT_PATH, "r") as f:
+    key2 = f.read()
+
+with open(CERT_PATH, "r") as f:
+    cert1 = f.read()
+
+print(cert1)
+
+
 class MQTT:
     def __init__(self) -> None:
         # MQTT SETUP
         # WiFi connection information
-        WIFI_SSID = "MiddleburyGuest"
-        WIFI_PASSWORD = ""
+        WIFI_SSID = "Storm"
+        WIFI_PASSWORD = "!Onward!"
 
         wifi = network.WLAN(network.STA_IF)
         wifi.active(True)
@@ -65,17 +81,17 @@ class MQTT:
         #   set MQTTClient initializer parameter to "ssl=True"
         #   Caveat: a secure connection uses about 9k bytes of the heap
         #         (about 1/4 of the micropython heap on the ESP8266 platform)
-        ADAFRUIT_IO_URL = b"io.adafruit.com"
-        ADAFRUIT_USERNAME = b"daninewbs"
-        ADAFRUIT_IO_KEY = b"aio_aMcu90KfpCfI5qN8tuP4DuhN3TG6"
+
+        AWS_HOSTNAME = b"a5lu8ppnce8yt-ats.iot.us-west-2.amazonaws.com"
+
         ADAFRUIT_IO_FEEDNAME_PUB = b"esp32mem"
         ADAFRUIT_IO_FEEDNAME_SUB = b"color-picker"
         self.client = MQTTClient(
             client_id=mqtt_client_id,
-            server=ADAFRUIT_IO_URL,
-            user=ADAFRUIT_USERNAME,
-            password=ADAFRUIT_IO_KEY,
+            server=AWS_HOSTNAME,
+            port=8883,
             ssl=True,
+            ssl_params={"key": key1, "cert": cert1},
         )
 
         try:
@@ -84,31 +100,33 @@ class MQTT:
             print("could not connect to MQTT server {}{}".format(type(e).__name__, e))
             sys.exit()
 
-        mqtt_feedname_pub = bytes(
-            "{:s}/feeds/{:s}".format(ADAFRUIT_USERNAME, ADAFRUIT_IO_FEEDNAME_PUB),
-            "utf-8",
-        )
-        mqtt_feedname_sub = bytes(
-            "{:s}/feeds/{:s}".format(ADAFRUIT_USERNAME, ADAFRUIT_IO_FEEDNAME_SUB),
-            "utf-8",
-        )
+        # mqtt_feedname_pub = bytes(
+        #     "{:s}/feeds/{:s}".format(ADAFRUIT_USERNAME, ADAFRUIT_IO_FEEDNAME_PUB),
+        #     "utf-8",
+        # )
+        # mqtt_feedname_sub = bytes(
+        #     "{:s}/feeds/{:s}".format(ADAFRUIT_USERNAME, ADAFRUIT_IO_FEEDNAME_SUB),
+        #     "utf-8",
+        # )
 
         self.client.set_callback(self.cb)
-        self.client.subscribe(mqtt_feedname_sub)
+        self.client.subscribe(bytes("suunn/color", "utf-8"))
 
     # the following function is the callback which is
     # called when subscribed data is received
     def cb(self, topic, msg):
         """"""
         print("Received Data:  Topic = {}, Msg = {}".format(topic, msg))
-        color = msg.decode("utf-8")
-        color = str(color.replace("#", ""))
+        message = json.loads(msg.decode("utf-8"))
+        if topic.decode("utf-8") == "suunn/color":
+            color = message.get("color", "#FFFFF")
+            color = str(color.replace("#", ""))
 
-        r = int(color[0:2], 16)
-        g = int(color[2:4], 16)
-        b = int(color[4:6], 16)
-        for i in range(LIGHTS):
+            r = int(color[0:2], 16)
+            g = int(color[2:4], 16)
+            b = int(color[4:6], 16)
+            for i in range(LIGHTS):
 
-            np[i] = (r, g, b)
-        np.write()
+                np[i] = (r, g, b)
+            np.write()
 

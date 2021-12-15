@@ -1,17 +1,14 @@
 # Danielle Newberry &  Ben Allan-Rahill
 # code to power sunrise lamp using esp32 feather huzza
+import gc
 from machine import I2C, Pin, PWM
 import esp
 import neopixel
-from suunn.Buttons import Buttons
 from suunn.Clock import Watch
 from suunn.Screen import Screen
-from suunn.sh1107 import SH1107_I2C
 import time
 from suunn.pcf8523 import PCF8523
-from suunn.real_clock import RealClock
 import random
-import network
 import time
 from suunn.subpub import MQTT
 
@@ -119,7 +116,6 @@ class Suunn:
             self.watch.live()
             # check for edit button press
             if self.watch.check_for_edit():
-                print("IN EDIT!!")
                 # GO TO ALARM EDIT STATE
                 self.next_state = self.states["EDIT_ALARM"]
                 break
@@ -133,7 +129,6 @@ class Suunn:
 
             # check if alarm is triggered
             if self.rtc.alarm_status:
-                print("ALARM!!")
                 # GO TO SUNRISE STATE
                 self.next_state = self.states["SUNRISE"]
                 break
@@ -216,7 +211,6 @@ class Suunn:
 
         def alarm_off():
             nonlocal alarm_on
-            print("alarm off!!")
             alarm_on = False
             self.rtc.alarm_status = False
 
@@ -236,6 +230,7 @@ class Suunn:
 
         extra_brightness = 0
         for i in range(light_minutes - 1):
+            self.watch.live()
             extra_brightness += 2
             for j in range(LIGHTS):
                 self.np[j] = (i + extra_brightness, i, 0)
@@ -273,3 +268,5 @@ class Suunn:
 sun = Suunn()
 
 sun.start()
+
+print("exited loop ugh ")
