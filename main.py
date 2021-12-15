@@ -34,24 +34,6 @@ SCL = Pin(22)
 pre_set_alarm_hour = 7
 pre_set_alarm_min = 30
 
-"""button press causes color to chnage to next one in sequence"""
-
-
-"""takes as input number of minutes it takes for strip to fade from min to max """
-
-
-"""uses RTC and checks if it is 30 min before wake up time"""
-# adapted from https://github.com/mchobby/esp8266-upy/blob/master/pcf8523/examples/test_alarm.py
-
-
-# wakeup(pre_set_alarm_hour, pre_set_alarm_min)
-
-
-# def wakeup(hour, min):
-#     if t.tm_hour == hour and t.tm_min == min - 30 and t.tm_sec == 60:
-#         return True
-
-
 # create FSM
 """ modes:
 WAKEUP (sunrise sequence)
